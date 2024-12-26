@@ -3,6 +3,7 @@ import logging
 from typing import Awaitable, List
 
 from aiostream import stream
+from app.services.utils import image_to_base64
 from fastapi import BackgroundTasks, Request
 from fastapi.responses import StreamingResponse
 from llama_index.core.chat_engine.types import StreamingAgentChatResponse
@@ -110,7 +111,12 @@ class VercelStreamResponse(StreamingResponse):
                     "nodes": [
                         SourceNodes.from_source_node(node).model_dump()
                         for node in result.source_nodes
-                    ]
+                    ],
+                    "base64_images": [
+                        image_to_base64(node.metadata["file_path"])
+                        for node in SourceNodes.from_source_nodes(result.source_nodes)
+                        if node.metadata.get("file_type", "").startswith("image")
+                    ],
                 },
             }
         )

@@ -1,11 +1,13 @@
 import logging
 
+from app.services.utils import image_to_base64
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, status
 from llama_index.core.llms import MessageRole
 
 from app.api.routers.events import EventCallbackHandler
 from app.api.routers.models import (
     ChatData,
+    CustomResult,
     Message,
     Result,
     SourceNodes,
@@ -57,7 +59,7 @@ async def chat(
 @r.post("/request")
 async def chat_request(
     data: ChatData,
-) -> Result:
+) -> CustomResult:
     last_message_content = data.get_last_message_content()
     messages = data.get_history_messages()
 
@@ -71,7 +73,14 @@ async def chat_request(
     chat_engine = get_chat_engine(filters=filters, params=params)
 
     response = await chat_engine.achat(last_message_content, messages)
-    return Result(
+    nodes = SourceNodes.from_source_nodes(response.source_nodes)
+    base64_images = []
+    for node in nodes:
+        if node.metadata.get("file_type", "").startswith("image"):
+            base64_images.append(image_to_base64(node.metadata["file_path"]))
+
+    return CustomResult(
         result=Message(role=MessageRole.ASSISTANT, content=response.response),
-        nodes=SourceNodes.from_source_nodes(response.source_nodes),
+        nodes=nodes,
+        base64_images=base64_images,
     )
