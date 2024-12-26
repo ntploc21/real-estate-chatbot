@@ -320,6 +320,10 @@ class Result(BaseModel):
     nodes: List[SourceNodes]
 
 
+class CustomResult(Result):
+    base64_images: List[str]
+
+
 class ChatConfig(BaseModel):
     starter_questions: Optional[List[str]] = Field(
         default=None,
