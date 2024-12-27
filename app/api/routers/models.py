@@ -89,10 +89,12 @@ class Annotation(BaseModel):
     data: AnnotationFileData | List[str] | AgentAnnotation | ArtifactAnnotation
 
     def to_content(self) -> Optional[str]:
-        if self.type == "document_file" and isinstance(self.data, AnnotationFileData):
+        if self.type in ["document_file", "image"] and isinstance(
+            self.data, AnnotationFileData
+        ):
             return self.data.to_llm_content()
-        elif self.type == "image":
-            raise NotImplementedError("Use image file is not supported yet!")
+        # elif self.type == "image":
+        #     raise NotImplementedError("Use image file is not supported yet!")
         else:
             logger.warning(
                 f"The annotation {self.type} is not supported for generating context content"
