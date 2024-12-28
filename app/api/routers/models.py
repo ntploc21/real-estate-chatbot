@@ -10,6 +10,11 @@ from pydantic.alias_generators import to_camel
 from app.config import DATA_DIR
 from app.services.file import DocumentFile
 
+from transformers import BlipProcessor, BlipForConditionalGeneration
+from PIL import Image
+import base64
+import io
+
 logger = logging.getLogger("uvicorn")
 
 
@@ -67,10 +72,41 @@ class AnnotationFileData(BaseModel):
         default_content += f"Local file path (instruction: Use for local tools: form filling, extractor): {local_file_path}\n"
         return default_content
 
+    @staticmethod
+    def _get_image_description(image_data: str) -> str:
+        """
+        Convert image data to a natural language description using an image captioning model
+        """
+        processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
+        model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base")
+
+        # Decode the base64 image data
+        image_bytes = base64.b64decode(image_data.split(",")[1])
+        image = Image.open(io.BytesIO(image_bytes))
+
+        # Generate the description
+        inputs = processor(image, return_tensors="pt")
+        out = model.generate(**inputs)
+        description = processor.decode(out[0], skip_special_tokens=True)
+
+        logger.info(f"Image description: {description}")
+
+        return description
+
     def to_llm_content(self) -> Optional[str]:
-        file_contents = [self._get_file_content(file) for file in self.files]
+        file_contents = []
+        for file in self.files:
+            logger.info(f"Processing file: {file.name}, content: {file.content}")
+            if file.content.startswith("data:image"):
+                description = self._get_image_description(file.content)
+                file_contents.append(f"Image description: {description}")
+            else:
+                file_contents.append(self._get_file_content(file))
         if len(file_contents) == 0:
             return None
+        # file_contents = [self._get_file_content(file) for file in self.files]
+        # if len(file_contents) == 0:
+        #     return None
         return "Use data from following files content\n" + "\n".join(file_contents)
 
 
