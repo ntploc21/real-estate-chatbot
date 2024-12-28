@@ -1,6 +1,6 @@
 import base64
 
-DATA_FULL_DIR = "/app/data-full"
+DATA_FULL_DIR = "/app/data"
 
 
 def image_to_base64(image_path):
