@@ -13,6 +13,7 @@ from app.middlewares.frontend import FrontendProxyMiddleware
 from app.observability import init_observability
 from app.settings import init_settings
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -46,6 +47,15 @@ if app_name:
     servers = [{"url": f"https://{app_name}.fly.dev"}]
 app = FastAPI(servers=servers)
 # app.add_middleware(ElasticAPM, client=apm)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 init_settings()
 init_observability()
