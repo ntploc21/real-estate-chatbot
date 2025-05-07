@@ -9,7 +9,7 @@ local:
   form_filling: {}
 llamahub:
   google.GoogleSearchToolSpec:
-    engine: <search engine ID>
-    key: <google api key>
+    engine: b16258b928ebc4139
+    key: AIzaSyB2m8zgJjrYq5ShlkiPseyFpU4gjX2Sgcg
     num: 2
   wikipedia.WikipediaToolSpec: {}
