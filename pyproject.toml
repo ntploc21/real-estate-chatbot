@@ -13,7 +13,7 @@ prod = "run:prod"
 build = "run:build"
 
 [tool.poetry.dependencies]
-python = ">=3.11,<3.14"
+python = ">=3.12,<3.14"
 fastapi = "^0.109.1"
 python-dotenv = "^1.0.0"
 pydantic = "<2.10"
@@ -23,6 +23,7 @@ llama-index = "*"
 rich = "^13.9.4"
 elastic-apm = "^6.9.1"
 psutil = "^5.9.0"
+transformers = "^4.47.1"
 
 [tool.poetry.dependencies.uvicorn]
 extras = [ "standard" ]
